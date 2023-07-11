@@ -56,3 +56,12 @@ correspond to the names of the sub-packages underneath the
 1. Similarly to the database build tags, if you need to support other sources, use the appropriate build tag(s).
 1. Support for build constraints will be removed in the future: https://github.com/golang-migrate/migrate/issues/60
 1. For versions of Go 1.15 and lower, [make sure](https://github.com/golang-migrate/migrate/pull/257#issuecomment-705249902) you're not installing the `migrate` CLI from a module. e.g. there should not be any `go.mod` files in your current directory or any directory from your current directory to the root
+
+## ORMS
+while using something like GORM is really helpful, it has some drawbacks like performance on high load and learning to use the functions GORM have is a must, SQLC, on the other side, is very fast and easy to use and it has automatic code generation for queries written in SQL unfortunately it only supports few DBs (MySQL, PostgreSQL, SQLite).
+
+### Getting started
+
+- [Download SQLC](https://sqlc.dev/)
+
+Running `sqlc init` to create a config file `sqlc.yaml`
