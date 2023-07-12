@@ -61,24 +61,23 @@ SELECT id, from_account_id, to_account_id, amount, created_at FROM transfers
 WHERE 
     from_account_id = $1 OR
     to_account_id = $2
-    
 ORDER BY id
-LIMIT BY $3
+LIMIT $3
 OFFSET $4
 `
 
 type GetTransfersParams struct {
-	FromAccountID int64       `json:"from_account_id"`
-	ToAccountID   int64       `json:"to_account_id"`
-	Column3       interface{} `json:"column_3"`
-	Offset        int32       `json:"offset"`
+	FromAccountID int64 `json:"from_account_id"`
+	ToAccountID   int64 `json:"to_account_id"`
+	Limit         int32 `json:"limit"`
+	Offset        int32 `json:"offset"`
 }
 
 func (q *Queries) GetTransfers(ctx context.Context, arg GetTransfersParams) ([]Transfer, error) {
 	rows, err := q.db.QueryContext(ctx, getTransfers,
 		arg.FromAccountID,
 		arg.ToAccountID,
-		arg.Column3,
+		arg.Limit,
 		arg.Offset,
 	)
 	if err != nil {
