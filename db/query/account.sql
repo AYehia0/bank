@@ -14,7 +14,7 @@ WHERE id = $1 LIMIT 1;
 SELECT * FROM accounts 
 where owner_name = $1
 ORDER BY id
-LIMIT BY $2
+LIMIT $2
 OFFSET $3;
 
 -- name: UpdateAccount :one
