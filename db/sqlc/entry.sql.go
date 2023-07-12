@@ -39,18 +39,18 @@ const getEntries = `-- name: GetEntries :many
 SELECT id, account_id, amount, created_at FROM entries
 WHERE account_id = $1
 ORDER BY id
-LIMIT BY $2
+LIMIT $2
 OFFSET $3
 `
 
 type GetEntriesParams struct {
-	AccountID int64       `json:"account_id"`
-	Column2   interface{} `json:"column_2"`
-	Offset    int32       `json:"offset"`
+	AccountID int64 `json:"account_id"`
+	Limit     int32 `json:"limit"`
+	Offset    int32 `json:"offset"`
 }
 
 func (q *Queries) GetEntries(ctx context.Context, arg GetEntriesParams) ([]Entry, error) {
-	rows, err := q.db.QueryContext(ctx, getEntries, arg.AccountID, arg.Column2, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getEntries, arg.AccountID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
