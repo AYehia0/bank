@@ -57,4 +57,17 @@ func TestGetAccounts(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		createRandomAccount(t)
 	}
+	// get 10 accounts
+	args := GetAccountsParams{
+		Limit:  5,
+		Offset: 5,
+	}
+	accounts, err := testQueries.GetAccounts(context.Background(), args)
+
+	require.NoError(t, err)
+	require.Len(t, accounts, 5)
+
+	for _, account := range accounts {
+		require.NotEmpty(t, account)
+	}
 }
