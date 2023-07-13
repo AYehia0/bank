@@ -65,3 +65,20 @@ while using something like GORM is really helpful, it has some drawbacks like pe
 - [Download SQLC](https://sqlc.dev/)
 
 Running `sqlc init` to create a config file `sqlc.yaml`
+
+## Database Transactions
+A database transaction is a logical unit of work that consists of one or more database operations, such as inserts, updates, or deletions. It represents a series of actions that must be executed together as a single, indivisible unit. The concept of transactions ensures that if one part of the transaction fails, the entire transaction is rolled back, and the database is left in its original state.
+
+Transactions provide the following key properties, often referred to as **ACID** properties:
+
+3. **Atomicity**: Transactions are atomic, meaning they are treated as a single unit of work. Either all the operations within a transaction are completed successfully, or none of them are. If any part of the transaction fails, all changes made by the transaction are rolled back, and the database is left unchanged.
+
+2. **Consistency**: Transactions ensure that the database moves from one consistent state to another. The database must satisfy all defined rules, constraints, and relationships during and after the transaction. If a transaction violates any of these rules, it is rolled back, and the original state is restored.
+
+4. **Isolation**: Transactions are isolated from each other, meaning that the intermediate states of concurrent transactions are not visible to each other. Each transaction operates as if it is the only transaction being executed, which prevents interference or data corruption caused by concurrent access.
+
+5. **Durability**: Once a transaction is committed, its changes are permanent and survive system failures, such as power outages or crashes. The committed data is stored in a way that it can be recovered and restored even in the event of a system failure.
+
+Transactions ensure data integrity and help maintain the reliability and consistency of a database system. They are widely used in applications where maintaining data integrity and handling concurrent access is crucial, such as banking systems, e-commerce platforms, and enterprise applications.
+
+In this project, Ensuring ACID is very important since we're dealing with money transfer, we have to implement transaction store.
