@@ -63,6 +63,8 @@ type TransferTxResult struct {
 	FromEntry   Entry    `json:"from_entry"`
 }
 
+var txKey = struct{}{}
+
 func (store *Store) TransferTransaction(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var res TransferTxResult
 
@@ -70,6 +72,8 @@ func (store *Store) TransferTransaction(ctx context.Context, arg TransferTxParam
 	err := store.execTransaction(ctx, func(q *Queries) error {
 		var err error
 
+		txName := ctx.Value(txKey)
+		fmt.Println(txName, ": creating a transfer")
 		// 1. create a transfer
 		res.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
 			FromAccountID: arg.FromAccountId,
@@ -82,6 +86,7 @@ func (store *Store) TransferTransaction(ctx context.Context, arg TransferTxParam
 		}
 
 		// 2. create entry to the account who received the amount with negative amount
+		fmt.Println(txName, ": creating an entry from")
 		res.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.FromAccountId,
 			Amount:    -arg.Amount,
@@ -91,6 +96,7 @@ func (store *Store) TransferTransaction(ctx context.Context, arg TransferTxParam
 			return err
 		}
 
+		fmt.Println(txName, ": creating an entry to")
 		// 3. create entry from the account who sent the amount with positive amount
 		res.ToEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.ToAccountId,
@@ -101,12 +107,14 @@ func (store *Store) TransferTransaction(ctx context.Context, arg TransferTxParam
 			return err
 		}
 
+		fmt.Println(txName, ": get account sender for update")
 		// get the accounts from the database, then add/subtract from their balance (need proper locking mechanism)
-		senderAccount, err := q.GetAccountById(ctx, arg.FromAccountId)
+		senderAccount, err := q.GetAccountByIdForUpdate(ctx, arg.FromAccountId)
 		if err != nil {
 			return err
 		}
 
+		fmt.Println(txName, ": update sender account (subtract)")
 		res.FromAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
 			ID:      senderAccount.ID,
 			Balance: senderAccount.Balance - arg.Amount,
@@ -115,11 +123,13 @@ func (store *Store) TransferTransaction(ctx context.Context, arg TransferTxParam
 			return err
 		}
 
-		receiverAccount, err := q.GetAccountById(ctx, arg.ToAccountId)
+		fmt.Println(txName, ": get account receiver for update")
+		receiverAccount, err := q.GetAccountByIdForUpdate(ctx, arg.ToAccountId)
 		if err != nil {
 			return err
 		}
 
+		fmt.Println(txName, ": update receiver account (add)")
 		res.ToAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
 			ID:      receiverAccount.ID,
 			Balance: receiverAccount.Balance + arg.Amount,

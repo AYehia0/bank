@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -19,15 +20,17 @@ func TestTransferTransaction(t *testing.T) {
 	results := make(chan TransferTxResult)
 
 	amount := int64(20)
-	numConcurrent := 5
+	numConcurrent := 2
 	for i := 0; i < numConcurrent; i++ {
+		txName := fmt.Sprintf("TX %d", i+1)
 		go func() {
+			ctx := context.WithValue(context.Background(), txKey, txName)
 			transferArgs := TransferTxParams{
 				FromAccountId: acc1.ID,
 				ToAccountId:   acc2.ID,
 				Amount:        amount,
 			}
-			transferRes, err := store.TransferTransaction(context.Background(), transferArgs)
+			transferRes, err := store.TransferTransaction(ctx, transferArgs)
 			errs <- err
 			results <- transferRes
 		}()

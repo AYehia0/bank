@@ -82,3 +82,33 @@ Transactions provide the following key properties, often referred to as **ACID**
 Transactions ensure data integrity and help maintain the reliability and consistency of a database system. They are widely used in applications where maintaining data integrity and handling concurrent access is crucial, such as banking systems, e-commerce platforms, and enterprise applications.
 
 In this project, Ensuring ACID is very important since we're dealing with money transfer, we have to implement transaction store.
+
+## Database Deadlock
+
+```
+=== RUN   TestTransferTransaction
+    store_test.go:38:
+                Error Trace:    /home/none/Things/github/go-backend/db/sqlc/store_test.go:38
+                Error:          Received unexpected error:
+                                pq: deadlock detected
+                Test:           TestTransferTransaction
+--- FAIL: TestTransferTransaction (1.01s)
+```
+
+A database deadlock occurs when two or more transactions permanently hold resources (such as database locks) and wait for each other to release the resources, resulting in a situation where none of the transactions can proceed. In other words, a deadlock is a state in which multiple transactions are blocked indefinitely, unable to complete their execution.
+
+Deadlocks typically occur in multi-user or concurrent database systems where multiple transactions are executed simultaneously. They can happen due to various factors, such as improper transaction scheduling, concurrent access to shared resources, or incorrect implementation of locking mechanisms.
+
+Here's a simplified example of a database deadlock scenario:
+
+- Transaction A acquires a lock on Resource X and requests a lock on Resource Y.
+- Transaction B acquires a lock on Resource Y and requests a lock on Resource X.
+
+Both transactions are now waiting for the other transaction to release the resource they need. As a result, neither transaction can proceed, leading to a deadlock.
+
+Database management systems (DBMS) typically have mechanisms in place to detect and resolve deadlocks. When a deadlock is detected, the DBMS can choose to automatically resolve it by aborting one of the transactions involved, allowing the other transaction(s) to continue. This process is known as deadlock detection and resolution.
+
+Preventing deadlocks usually involves proper `transaction design and concurrency control mechanisms`. Techniques like transaction scheduling, `locking protocols`, and deadlock detection algorithms are used to minimize the occurrence of deadlocks and ensure efficient database operations.
+
+### Deadlock detection and debugging
+1. Check which transaction calling which query 
