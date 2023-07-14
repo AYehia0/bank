@@ -97,7 +97,33 @@ func (store *Store) TransferTransaction(ctx context.Context, arg TransferTxParam
 			Amount:    arg.Amount,
 		})
 
-		// TODO: 4. update the amount/money in the sender's account
+		if err != nil {
+			return err
+		}
+
+		// get the accounts from the database, then add/subtract from their balance (need proper locking mechanism)
+		senderAccount, err := q.GetAccountById(ctx, arg.FromAccountId)
+		if err != nil {
+			return err
+		}
+
+		res.FromAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+			ID:      senderAccount.ID,
+			Balance: senderAccount.Balance - arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
+
+		receiverAccount, err := q.GetAccountById(ctx, arg.ToAccountId)
+		if err != nil {
+			return err
+		}
+
+		res.ToAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+			ID:      receiverAccount.ID,
+			Balance: receiverAccount.Balance + arg.Amount,
+		})
 		if err != nil {
 			return err
 		}
