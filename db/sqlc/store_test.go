@@ -43,7 +43,7 @@ func TestTransferTransaction(t *testing.T) {
 		// result checking
 		require.Equal(t, transferRes.Transfer.FromAccountID, acc1.ID)
 		require.Equal(t, transferRes.Transfer.ToAccountID, acc2.ID)
-		require.Equal(t, transferRes.Transfer.Amount, int64(200))
+		require.Equal(t, transferRes.Transfer.Amount, amount)
 
 		// entry
 		require.Equal(t, transferRes.FromEntry.AccountID, acc1.ID)
