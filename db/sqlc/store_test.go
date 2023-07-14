@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -20,17 +19,15 @@ func TestTransferTransaction(t *testing.T) {
 	results := make(chan TransferTxResult)
 
 	amount := int64(20)
-	numConcurrent := 2
+	numConcurrent := 5
 	for i := 0; i < numConcurrent; i++ {
-		txName := fmt.Sprintf("TX %d", i+1)
 		go func() {
-			ctx := context.WithValue(context.Background(), txKey, txName)
-			transferArgs := TransferTxParams{
+			ctx := context.Background()
+			transferRes, err := store.TransferTransaction(ctx, TransferTxParams{
 				FromAccountId: acc1.ID,
 				ToAccountId:   acc2.ID,
 				Amount:        amount,
-			}
-			transferRes, err := store.TransferTransaction(ctx, transferArgs)
+			})
 			errs <- err
 			results <- transferRes
 		}()
@@ -84,7 +81,7 @@ func TestTransferTransaction(t *testing.T) {
 	updatedAcc2, err := store.GetAccountById(context.Background(), acc2.ID)
 	require.NoError(t, err)
 
-	require.Equal(t, updatedAcc1.Balance, acc1.Balance-int64(numConcurrent)*amount)
-	require.Equal(t, updatedAcc2.Balance, acc2.Balance-int64(numConcurrent)*amount)
+	require.Equal(t, acc1.Balance-int64(numConcurrent)*amount, updatedAcc1.Balance)
+	require.Equal(t, acc2.Balance+int64(numConcurrent)*amount, updatedAcc2.Balance)
 
 }
