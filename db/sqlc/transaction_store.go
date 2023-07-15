@@ -104,27 +104,17 @@ func (store *Store) TransferTransaction(ctx context.Context, arg TransferTxParam
 		}
 
 		// get the accounts from the database, then add/subtract from their balance (need proper locking mechanism)
-		senderAccount, err := q.GetAccountByIdForUpdate(ctx, arg.FromAccountId)
-		if err != nil {
-			return err
-		}
-
-		res.FromAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
-			ID:      senderAccount.ID,
-			Balance: senderAccount.Balance - arg.Amount,
+		res.FromAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+			ID:     arg.FromAccountId,
+			Amount: -arg.Amount,
 		})
 		if err != nil {
 			return err
 		}
 
-		receiverAccount, err := q.GetAccountByIdForUpdate(ctx, arg.ToAccountId)
-		if err != nil {
-			return err
-		}
-
-		res.ToAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
-			ID:      receiverAccount.ID,
-			Balance: receiverAccount.Balance + arg.Amount,
+		res.ToAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+			ID:     arg.ToAccountId,
+			Amount: arg.Amount,
 		})
 		if err != nil {
 			return err
