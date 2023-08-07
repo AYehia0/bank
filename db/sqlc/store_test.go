@@ -85,3 +85,51 @@ func TestTransferTransaction(t *testing.T) {
 	require.Equal(t, acc2.Balance+int64(numConcurrent)*amount, updatedAcc2.Balance)
 
 }
+
+// deadlock happens when 2 transactions happen at the same time
+// transfer 10$ from account 1 to account 2
+// AND transfer 10$ from account 2 to account 1
+// run 5 concurrent transactions from 1 to 2 and 2 to 1
+// we expect the balance from acc1 to equal balance in acc2
+func TestTransferTransactionDeadLock(t *testing.T) {
+	store := NewStore(testDb)
+	acc1 := createRandomAccount(t)
+	acc2 := createRandomAccount(t)
+
+	errs := make(chan error)
+
+	amount := int64(20)
+	numConcurrent := 10
+	for i := 0; i < numConcurrent; i++ {
+
+		fromAccountId := acc1.ID
+		toAccountId := acc2.ID
+
+		if i%2 == 1 {
+			fromAccountId = acc2.ID
+			toAccountId = acc1.ID
+		}
+		go func() {
+			ctx := context.Background()
+			_, err := store.TransferTransaction(ctx, TransferTxParams{
+				FromAccountId: fromAccountId,
+				ToAccountId:   toAccountId,
+				Amount:        amount,
+			})
+			errs <- err
+		}()
+	}
+
+	for i := 0; i < numConcurrent; i++ {
+		err := <-errs
+		require.NoError(t, err)
+	}
+	updatedAcc1, err := store.GetAccountById(context.Background(), acc1.ID)
+	require.NoError(t, err)
+
+	updatedAcc2, err := store.GetAccountById(context.Background(), acc2.ID)
+	require.NoError(t, err)
+
+	require.Equal(t, acc1.Balance, updatedAcc1.Balance)
+	require.Equal(t, acc2.Balance, updatedAcc2.Balance)
+}

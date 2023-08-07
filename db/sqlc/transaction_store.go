@@ -104,23 +104,40 @@ func (store *Store) TransferTransaction(ctx context.Context, arg TransferTxParam
 		}
 
 		// get the accounts from the database, then add/subtract from their balance (need proper locking mechanism)
-		res.FromAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
-			ID:     arg.FromAccountId,
-			Amount: -arg.Amount,
-		})
-		if err != nil {
-			return err
-		}
 
-		res.ToAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
-			ID:     arg.ToAccountId,
-			Amount: arg.Amount,
-		})
-		if err != nil {
-			return err
+		// to avoid deadlock, update smaller account id first
+		if arg.FromAccountId < arg.ToAccountId {
+
+			res.FromAccount, res.ToAccount, err = moveMoney(ctx, q, arg.FromAccountId, -arg.Amount, arg.ToAccountId, arg.Amount)
+		} else {
+			res.ToAccount, res.FromAccount, err = moveMoney(ctx, q, arg.ToAccountId, arg.Amount, arg.FromAccountId, -arg.Amount)
 		}
 
 		return nil
 	})
 	return res, err
+}
+
+func moveMoney(
+	ctx context.Context,
+	q *Queries,
+	accId1 int64,
+	amount1 int64,
+	accId2 int64,
+	amount2 int64,
+) (account1, account2 Account, err error) {
+
+	account1, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+		ID:     accId1,
+		Amount: amount1,
+	})
+	if err != nil {
+		return
+	}
+
+	account2, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+		ID:     accId2,
+		Amount: amount2,
+	})
+	return
 }
