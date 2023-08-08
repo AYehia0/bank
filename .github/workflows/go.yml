@@ -12,6 +12,9 @@ on:
 jobs:
 
   test:
+    name: Test
+    runs-on: ubuntu-latest
+
     services:
       postgres:
         image: postgres12
@@ -26,7 +29,6 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-      runs-on: ubuntu-latest
     steps:
     - name: Checkout code.
     - uses: actions/checkout@v3
