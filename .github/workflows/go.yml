@@ -17,7 +17,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres12
+        image: postgres:12-alpine
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: secret 
@@ -31,7 +31,7 @@ jobs:
           - 5432:5432
     steps:
     - name: Checkout code.
-    - uses: actions/checkout@v3
+      uses: actions/checkout@v3
 
     - name: Set up Go
       uses: actions/setup-go@v4
