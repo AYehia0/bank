@@ -9,22 +9,16 @@ import (
 	"os"
 	"testing"
 
+	"github.com/AYehia0/go-bk-mst/utils"
 	_ "github.com/lib/pq"
 )
 
 var testQueries *Queries
 var testDb *sql.DB
 
-const (
-	dbDriver = "postgres"
-
-	// TODO: use env_vars
-	dbSourceUrl = "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable"
-)
-
 func TestMain(m *testing.M) {
-	var err error
-	testDb, err = sql.Open(dbDriver, dbSourceUrl)
+	config, err := utils.ConfigStore("../..", "config", "env")
+	testDb, err = sql.Open(config.DbDriver, config.DbSource)
 
 	if err != nil {
 		log.Fatalf("Failed to connect to the database : %v", err)

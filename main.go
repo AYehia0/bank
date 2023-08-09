@@ -6,23 +6,16 @@ import (
 
 	"github.com/AYehia0/go-bk-mst/api"
 	db "github.com/AYehia0/go-bk-mst/db/sqlc"
+	"github.com/AYehia0/go-bk-mst/utils"
 
 	// important for database init
 	_ "github.com/lib/pq"
 )
 
-const (
-	dbDriver = "postgres"
-
-	// TODO: use env_vars
-	dbSourceUrl   = "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable"
-	serverAddress = "0.0.0.0:8080"
-)
-
 func main() {
 	// connect to the database
-	var err error
-	conn, err := sql.Open(dbDriver, dbSourceUrl)
+	config, err := utils.ConfigStore(".", "config", "env")
+	conn, err := sql.Open(config.DbDriver, config.DbSource)
 
 	if err != nil {
 		log.Fatalf("Failed to connect to the database : %v", err)
@@ -35,6 +28,6 @@ func main() {
 		log.Fatalf("Failed to start the server : %v", err)
 	}
 
-	server.StartServer(serverAddress)
+	server.StartServer(config.ServerAddr)
 
 }
