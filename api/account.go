@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/AYehia0/go-bk-mst/api/helpers"
@@ -34,4 +35,56 @@ func (server *Server) createAccount(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, account)
+}
+
+type getAccountReq struct {
+	Id int64 `uri:"id" binding:"required,min=1"`
+}
+
+func (server *Server) getAccount(ctx *gin.Context) {
+	var req getAccountReq
+
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, helpers.ErrorResp(err))
+		return
+	}
+
+	account, err := server.store.GetAccountById(ctx, req.Id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, helpers.ErrorResp(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, helpers.ErrorResp(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, account)
+}
+
+type getAccountsReq struct {
+	PageId   int32 `form:"page_id" binding:"required,min=1"`
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
+}
+
+func (server *Server) getAccounts(ctx *gin.Context) {
+	var req getAccountsReq
+
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, helpers.ErrorResp(err))
+		return
+	}
+
+	arg := db.GetAccountsParams{
+		Limit:  req.PageSize,
+		Offset: (req.PageId - 1) * req.PageSize,
+	}
+
+	accounts, err := server.store.GetAccounts(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, helpers.ErrorResp(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, accounts)
 }
