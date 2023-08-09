@@ -8,14 +8,20 @@ import (
 	"fmt"
 )
 
-// provides all the functions to execute db queries and transactions
-type Store struct {
+// in order to have all the functions defined in this interface, we can use sqlc emit to interface to automatically add them
+type Store interface {
+	Querier
+	TransferTransaction(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
+}
+
+// provides all the functions to execute sql db queries and transactions
+type SQLStore struct {
 	*Queries //composition over inhertance
 	db       *sql.DB
 }
 
-func NewStore(db *sql.DB) *Store {
-	return &Store{
+func NewStore(db *sql.DB) Store {
+	return &SQLStore{
 		db:      db,
 		Queries: New(db),
 	}
@@ -23,7 +29,7 @@ func NewStore(db *sql.DB) *Store {
 
 // execute the transaction
 // callback on the same function
-func (store *Store) execTransaction(ctx context.Context, fn func(*Queries) error) error {
+func (store *SQLStore) execTransaction(ctx context.Context, fn func(*Queries) error) error {
 	// store.db.Begin() uses the background context
 	tx, err := store.db.BeginTx(ctx, nil)
 
@@ -65,7 +71,7 @@ type TransferTxResult struct {
 
 var txKey = struct{}{}
 
-func (store *Store) TransferTransaction(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
+func (store *SQLStore) TransferTransaction(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var res TransferTxResult
 
 	// go Closures : https://betterprogramming.pub/closures-made-simple-with-golang-69db3017cd7b?gi=48e0b91f624a
