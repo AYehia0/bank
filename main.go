@@ -15,6 +15,11 @@ import (
 func main() {
 	// connect to the database
 	config, err := utils.ConfigStore(".", "config", "env")
+
+	if err != nil {
+		log.Fatalf("Couldn't load configs, error: %s", err)
+	}
+
 	conn, err := sql.Open(config.DbDriver, config.DbSource)
 
 	if err != nil {

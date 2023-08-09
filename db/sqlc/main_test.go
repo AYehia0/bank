@@ -18,6 +18,11 @@ var testDb *sql.DB
 
 func TestMain(m *testing.M) {
 	config, err := utils.ConfigStore("../..", "config", "env")
+
+	if err != nil {
+		log.Fatalf("Couldn't load configs, error: %s", err)
+	}
+
 	testDb, err = sql.Open(config.DbDriver, config.DbSource)
 
 	if err != nil {
