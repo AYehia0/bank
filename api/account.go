@@ -17,7 +17,7 @@ type createAccountReq struct {
 func (server *Server) createAccount(ctx *gin.Context) {
 	var req createAccountReq
 
-	if err := ctx.BindJSON(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, helpers.ErrorResp(err))
 		return
 	}
