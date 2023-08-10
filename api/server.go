@@ -2,6 +2,7 @@ package api
 
 import (
 	db "github.com/AYehia0/go-bk-mst/db/sqlc"
+	"github.com/AYehia0/go-bk-mst/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,6 +16,9 @@ func NewServer(store db.Store) *Server {
 		store: store,
 	}
 	router := gin.Default()
+
+	// middlewares
+	router.Use(utils.LogRequestBodyMiddleware)
 
 	// methods
 	router.POST("/accounts", server.createAccount)
