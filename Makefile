@@ -31,6 +31,12 @@ migrateup:
 migratedown:
 	migrate -path db/migrations -database $(postgres_url) -verbose down
 
+migrateup1:
+	migrate -path db/migrations -database $(postgres_url) -verbose up 1
+
+migratedown1:
+	migrate -path db/migrations -database $(postgres_url) -verbose down 1
+
 # generate sqlc queries
 sqlc:
 	sqlc generate
@@ -44,4 +50,4 @@ server:
 mock:
 	mockgen --destination db/mock/transaction_store.go --package storedb github.com/AYehia0/go-bk-mst/db/sqlc Store
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock migrateup1 migratedown1
