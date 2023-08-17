@@ -7,6 +7,7 @@ import (
 	"github.com/AYehia0/go-bk-mst/api/helpers"
 	db "github.com/AYehia0/go-bk-mst/db/sqlc"
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 )
 
 type createAccountReq struct {
