@@ -10,10 +10,11 @@ import (
 )
 
 func createRandomUser(t *testing.T) User {
+	password, err := utils.GenerateHash(utils.GetRandomOwnerName())
 	arg := CreateUserParams{
 		Username: utils.GetRandomOwnerName(),
 		Email:    utils.GetRandomEmail(),
-		Password: "secret", // TODO: Hash it!
+		Password: password,
 		FullName: utils.GetRandomOwnerName(),
 	}
 
