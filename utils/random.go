@@ -14,7 +14,7 @@ func randomInt(min, max int64) int64 {
 	return min + rand.Int63n(max-min+1)
 }
 
-func randomString(length int) string {
+func RandomString(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	chars := make([]byte, length)
 	for i := range chars {
@@ -29,7 +29,7 @@ func randomStringFromList(list []string) string {
 }
 
 func GetRandomOwnerName() string {
-	return randomString(8)
+	return RandomString(8)
 }
 
 func GetRandomAmount() int64 {

@@ -9,7 +9,7 @@ import (
 
 func TestPassword(t *testing.T) {
 	// check if the two passwords are equal
-	password := randomString(8)
+	password := RandomString(8)
 
 	hashedPassword, err := GenerateHash(password)
 
