@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/AYehia0/go-bk-mst/api/helpers"
@@ -94,7 +95,11 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	user, err := server.store.GetUserByUsername(ctx, req.Username)
 
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, helpers.ErrorResp(err))
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, helpers.ErrorResp(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, helpers.ErrorResp(err))
 		return
 	}
 
