@@ -122,7 +122,7 @@ func TestCreateUser(t *testing.T) {
 			testCase.buildStubs(store)
 
 			// start a server and handle requests using httpserver
-			server := NewServer(store)
+			server := newTestServer(t, store)
 
 			// creating the json
 			data, err := json.Marshal(testCase.body)

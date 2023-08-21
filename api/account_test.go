@@ -95,7 +95,7 @@ func TestGetAccountAPI(t *testing.T) {
 			testCase.buildStubs(store)
 
 			// start a server and handle requests using httpserver
-			server := NewServer(store)
+			server := newTestServer(t, store)
 
 			// we don't have to start a real server, instead we can use the recorder to catch/send req/res
 			recorder := httptest.NewRecorder()
@@ -204,7 +204,7 @@ func TestCreateAccountAPI(t *testing.T) {
 			testCase.buildStubs(store)
 
 			// start a server and handle requests using httpserver
-			server := NewServer(store)
+			server := newTestServer(t, store)
 
 			// creating the json
 			data, err := json.Marshal(testCase.body)
@@ -324,7 +324,7 @@ func TestGetAccountsAPI(t *testing.T) {
 			testCase.buildStubs(store)
 
 			// start a server and handle requests using httpserver
-			server := NewServer(store)
+			server := newTestServer(t, store)
 
 			// we don't have to start a real server, instead we can use the recorder to catch/send req/res
 			recorder := httptest.NewRecorder()

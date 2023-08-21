@@ -1,11 +1,17 @@
 package utils
 
-import "github.com/spf13/viper"
+import (
+	"time"
+
+	"github.com/spf13/viper"
+)
 
 type Config struct {
-	DbDriver   string `mapstructure:"DB_DRIVER"`
-	DbSource   string `mapstructure:"DB_SOURCE"`
-	ServerAddr string `mapstructure:"SERVER_ADDR"`
+	DbDriver            string        `mapstructure:"DB_DRIVER"`
+	DbSource            string        `mapstructure:"DB_SOURCE"`
+	ServerAddr          string        `mapstructure:"SERVER_ADDR"`
+	TokenKey            string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
+	TokenExpireDuration time.Duration `mapstructure:"TOKEN_EXPIRE_TIME"`
 }
 
 func ConfigStore(configPath, configName, configType string) (config Config, err error) {

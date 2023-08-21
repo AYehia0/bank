@@ -10,15 +10,29 @@ import (
 	"github.com/lib/pq"
 )
 
-type createUserReq struct {
+type userReq struct {
 	Username string `json:"username" binding:"required,alphanum"`
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=8"`
 	FullName string `json:"full_name" binding:"required"`
 }
 
+type userResp struct {
+	Username string `json:"username" binding:"required,alphanum"`
+	Email    string `json:"email" binding:"required,email"`
+	FullName string `json:"full_name" binding:"required"`
+}
+
+func newUserResp(user db.User) userResp {
+	return userResp{
+		FullName: user.FullName,
+		Email:    user.Email,
+		Username: user.Username,
+	}
+}
+
 func (server *Server) createUser(ctx *gin.Context) {
-	var req createUserReq
+	var req userReq
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, helpers.ErrorResp(err))
@@ -54,5 +68,55 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, user)
+	// without the password field
+	userTemp := newUserResp(user)
+	ctx.JSON(http.StatusOK, userTemp)
+}
+
+type userLoginReq struct {
+	Username string `json:"username" binding:"required,alphanum"`
+	Password string `json:"password" binding:"required,min=8"`
+}
+type loginResponse struct {
+	AccessToken string   `json:"access_token"`
+	User        userResp `json:"user"`
+}
+
+func (server *Server) loginUser(ctx *gin.Context) {
+	var req userLoginReq
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, helpers.ErrorResp(err))
+		return
+	}
+
+	// find the user in the database
+	user, err := server.store.GetUserByUsername(ctx, req.Username)
+
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, helpers.ErrorResp(err))
+		return
+	}
+
+	// checking the password
+	err = utils.ComparePasswords(req.Password, user.Password)
+
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, helpers.ErrorResp(err))
+		return
+	}
+
+	// create the token
+	token, err := server.tokenCreator.Create(user.Username, server.config.TokenExpireDuration)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, helpers.ErrorResp(err))
+		return
+	}
+	resp := loginResponse{
+		AccessToken: token,
+		User:        newUserResp(user),
+	}
+
+	ctx.JSON(http.StatusOK, resp)
 }
