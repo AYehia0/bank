@@ -5,13 +5,12 @@ import (
 	"time"
 
 	"github.com/AYehia0/go-bk-mst/utils"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/require"
 )
 
-func TestValidateJWTToken(t *testing.T) {
+func TestValidatePasteoToken(t *testing.T) {
 	secret := utils.RandomString(32)
-	creator, err := NewJWTCreator(secret)
+	creator, err := NewPasteoToken(secret)
 
 	require.NoError(t, err)
 
@@ -37,10 +36,10 @@ func TestValidateJWTToken(t *testing.T) {
 	require.NotZero(t, payload.Id)
 }
 
-func TestInvalidJWTToken(t *testing.T) {
+func TestInvalidPasteoToken(t *testing.T) {
 	t.Run("TokenExpired", func(t *testing.T) {
 		secret := utils.RandomString(32)
-		creator, err := NewJWTCreator(secret)
+		creator, err := NewPasteoToken(secret)
 
 		require.NoError(t, err)
 
@@ -56,24 +55,5 @@ func TestInvalidJWTToken(t *testing.T) {
 		require.Error(t, err)
 		require.ErrorIs(t, err, TokenExpiredError)
 		require.Nil(t, payload)
-	})
-
-	t.Run("InvalidAlgo", func(t *testing.T) {
-
-		payload, err := NewPayload(utils.GetRandomOwnerName(), time.Minute)
-		require.NoError(t, err)
-
-		// create a new token
-		token := jwt.NewWithClaims(jwt.SigningMethodNone, payload)
-
-		// sign/create the token
-		fToken, err := token.SignedString(jwt.UnsafeAllowNoneSignatureType)
-		require.NoError(t, err)
-
-		// trying to verify that token
-		creator, err := NewJWTCreator(utils.RandomString(32))
-		payload, err = creator.Verify(fToken)
-		require.Error(t, err)
-		require.ErrorIs(t, err, TokenInvalidError)
 	})
 }
