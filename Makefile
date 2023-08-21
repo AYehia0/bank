@@ -17,6 +17,9 @@ postgres_url = postgresql://$(postgres_user):$(postgres_pass)@$(db_location):$(p
 postgres:
 	docker run --name $(postgres_container_name) -p $(port):$(port) -e POSTGRES_USER=$(postgres_user) -e POSTGRES_PASSWORD=$(postgres_pass) -d $(postgres_image)
 
+run:
+	docker start --name $(postgres_container_name)
+
 # create the database in the docker container
 createdb:
 	docker exec -it postgres12 $(postgres_createdb)
@@ -50,4 +53,4 @@ server:
 mock:
 	mockgen --destination db/mock/transaction_store.go --package storedb github.com/AYehia0/go-bk-mst/db/sqlc Store
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock migrateup1 migratedown1
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock migrateup1 migratedown1 run
