@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	authorizationHeader = "Authorization"
-	authorizationType   = "bearer"
+	authorizationHeaderKey = "authorization"
+	authorizationType      = "bearer"
 
 	// to be able to store the token in the context, so we can access it later
 	authorizationPayloadKey = "authorization_payload_ctx"
@@ -23,7 +23,7 @@ func authMiddleware(tokenCreator token.TokenCreator) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// implement the authentication here
 		// check the header : authentication
-		authHeader := ctx.GetHeader(authorizationHeader)
+		authHeader := ctx.Request.Header.Get(authorizationHeaderKey)
 		if len(authHeader) == 0 {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized,
 				errors.New("Authentication header is empty"),
