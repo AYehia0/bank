@@ -2,17 +2,18 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/AYehia0/go-bk-mst/api/helpers"
 	db "github.com/AYehia0/go-bk-mst/db/sqlc"
+	"github.com/AYehia0/go-bk-mst/token"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 )
 
 type createAccountReq struct {
-	OwnerName string `json:"owner_name" binding:"required"`
-	Currency  string `json:"currency" binding:"required,currency"`
+	Currency string `json:"currency" binding:"required,currency"`
 }
 
 func (server *Server) createAccount(ctx *gin.Context) {
@@ -23,8 +24,10 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
+	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.CreateAccountParams{
-		OwnerName: req.OwnerName,
+		OwnerName: payload.Username,
 		Currency:  req.Currency,
 		Balance:   0,
 	}
@@ -65,6 +68,14 @@ func (server *Server) getAccount(ctx *gin.Context) {
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, helpers.ErrorResp(err))
+		return
+	}
+
+	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if account.OwnerName != payload.Username {
+		ctx.JSON(http.StatusUnauthorized,
+			errors.New("Account doesn't belong to the logged in user!"),
+		)
 		return
 	}
 
