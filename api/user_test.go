@@ -98,6 +98,8 @@ func TestCreateUser(t *testing.T) {
 					Password: user.Password,
 					FullName: user.FullName,
 				}
+				// important, as the request doesn't return the password
+				user.Password = ""
 				store.EXPECT().
 					CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).
 					Times(1).
