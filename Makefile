@@ -18,7 +18,7 @@ postgres:
 	docker run --name $(postgres_container_name) -p $(port):$(port) -e POSTGRES_USER=$(postgres_user) -e POSTGRES_PASSWORD=$(postgres_pass) -d $(postgres_image)
 
 run:
-	docker start --name $(postgres_container_name)
+	docker start $(postgres_container_name)
 
 # create the database in the docker container
 createdb:
