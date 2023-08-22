@@ -12,6 +12,11 @@ import (
 
 func LogRequestBodyMiddleware(c *gin.Context) {
 	// Read the request body
+	if c.Request.Body == nil {
+		fmt.Printf("Request body is empty!")
+		c.Next()
+		return
+	}
 	body, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
