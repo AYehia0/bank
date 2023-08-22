@@ -55,14 +55,18 @@ func (server *Server) setupServer() {
 	// middlewares
 	router.Use(utils.LogRequestBodyMiddleware)
 
-	router.POST("/accounts", server.createAccount)
-	router.GET("/accounts/:id", server.getAccount)
-	router.GET("/accounts", server.getAccounts)
-
-	router.POST("/transfers", server.createTransfer)
-
+	// requires no login
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
+
+	// create a group for them
+	authRequired := router.Group("/").Use(authMiddleware(server.tokenCreator))
+
+	authRequired.POST("/accounts", server.createAccount)
+	authRequired.GET("/accounts/:id", server.getAccount)
+	authRequired.GET("/accounts", server.getAccounts)
+
+	authRequired.POST("/transfers", server.createTransfer)
 
 	server.router = router
 }

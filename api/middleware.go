@@ -26,7 +26,7 @@ func authMiddleware(tokenCreator token.TokenCreator) gin.HandlerFunc {
 		authHeader := ctx.Request.Header.Get(authorizationHeaderKey)
 		if len(authHeader) == 0 {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized,
-				errors.New("Authentication header is empty"),
+				helpers.ErrorResp(errors.New("Authentication header is empty")),
 			)
 			return
 		}
@@ -35,7 +35,7 @@ func authMiddleware(tokenCreator token.TokenCreator) gin.HandlerFunc {
 
 		if len(authFields) < 2 {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized,
-				errors.New("Invalid authentication header format"),
+				helpers.ErrorResp(errors.New("Invalid authentication header format")),
 			)
 			return
 		}
@@ -44,7 +44,7 @@ func authMiddleware(tokenCreator token.TokenCreator) gin.HandlerFunc {
 		authType := strings.ToLower(authFields[0])
 		if authType != authorizationType {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized,
-				fmt.Errorf("Unspported authorization type %s", authType),
+				helpers.ErrorResp(fmt.Errorf("Unspported authorization type %s", authType)),
 			)
 			return
 		}
