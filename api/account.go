@@ -95,9 +95,12 @@ func (server *Server) getAccounts(ctx *gin.Context) {
 		return
 	}
 
+	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.GetAccountsParams{
-		Limit:  req.PageSize,
-		Offset: (req.PageId - 1) * req.PageSize,
+		OwnerName: payload.Username,
+		Limit:     req.PageSize,
+		Offset:    (req.PageId - 1) * req.PageSize,
 	}
 
 	accounts, err := server.store.GetAccounts(ctx, arg)
