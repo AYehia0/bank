@@ -2,11 +2,13 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/AYehia0/go-bk-mst/api/helpers"
 	db "github.com/AYehia0/go-bk-mst/db/sqlc"
+	"github.com/AYehia0/go-bk-mst/token"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,10 +28,21 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	}
 
 	// check the currency matching
-	if !server.validateAccount(ctx, req.ToAccountId, req.Currency) {
+	_, valid := server.validateAccount(ctx, req.ToAccountId, req.Currency)
+	if !valid {
 		return
 	}
-	if !server.validateAccount(ctx, req.FromAccountId, req.Currency) {
+	fromAccount, valid := server.validateAccount(ctx, req.FromAccountId, req.Currency)
+	if !valid {
+		return
+	}
+	// logged-in user can only transfer money from his account to others
+	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	if payload.Username != fromAccount.OwnerName {
+		ctx.JSON(http.StatusUnauthorized,
+			helpers.ErrorResp(errors.New("from_account doesn't belong to the logged-in user!")),
+		)
 		return
 	}
 
@@ -49,7 +62,7 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 
-func (server *Server) validateAccount(ctx *gin.Context, accountId int64, currency string) bool {
+func (server *Server) validateAccount(ctx *gin.Context, accountId int64, currency string) (db.Account, bool) {
 
 	account, err := server.store.GetAccountById(ctx, accountId)
 
@@ -57,18 +70,18 @@ func (server *Server) validateAccount(ctx *gin.Context, accountId int64, currenc
 		// check if account not found
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, helpers.ErrorResp(err))
-			return false
+			return account, false
 		}
 		ctx.JSON(http.StatusInternalServerError, helpers.ErrorResp(err))
-		return false
+		return account, false
 	}
 
 	// check the currency
 	if account.Currency != currency {
 		err := fmt.Errorf("Account [%d] currency mismatch: %s vs %s", accountId, currency, account.Currency)
 		ctx.JSON(http.StatusBadRequest, helpers.ErrorResp(err))
-		return false
+		return account, false
 	}
 
-	return true
+	return account, true
 }
