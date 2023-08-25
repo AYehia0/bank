@@ -20,3 +20,13 @@ After installing docker make sure it's up and running.
 In our case, `docker exec -it postgres12 psql -U root`
 
 - Viewing logs of the container : `docker logs container_name`
+## Networks
+- Connecting containers togethers through networks, to achieve this : `docker network create network-name`
+
+- Then adding the container to the network : `docker network connect container-name`
+
+- Remove any existing containers : `docker rmi container-name`
+- Rebuild the container : `docker build -t container-name:tag .`
+- Run the image : `docker run --name bk --network bk-network -p 8080:8080 -e GIN_MODE=release -e DB_SOURCE="postgresql://root:secret@postgres12:5432/simple_bank?sslmode=disable" bk:latest`
+
+Notes : Since we're using viper, it supports overwritting config vars through export or passing it to docker : `-e`.
