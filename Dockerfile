@@ -8,6 +8,7 @@ RUN go build -o main main.go
 FROM alpine:3.17
 WORKDIR /app
 COPY --from=build /app/main .
+COPY config.env .
 
 # The exposed port on which the server will run
 EXPOSE 8080
