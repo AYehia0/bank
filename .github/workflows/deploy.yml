@@ -25,7 +25,7 @@ jobs:
         with:
           mask-password: 'true' # this will prevent the Docker password output from being shared between separate jobs.
       - name: Load Secrets from aws-secretsmanager and overwrite app.env
-        run : aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString --output text | jq 'to_entries|map("\(.key)=\(.value)")|.[]' > app.env
+        run : aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString --output text | jq 'to_entries|map("\(.key)=\(.value)")|.[]' > config.env
       - name: Build, tag, and push docker image to Amazon ECR
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
