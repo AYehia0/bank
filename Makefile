@@ -12,6 +12,8 @@ postgres_createdb = createdb --username=root --owner=root $(db_name)
 postgres_dropdb = dropdb $(db_name)
 postgres_url = postgresql://$(postgres_user):$(postgres_pass)@$(db_location):$(port)/$(db_name)?sslmode=disable
 
+# black magic
+args = $(foreach a,$($(subst -,_,$1)_args),$(if $(value $a),$a="$($a)"))
 
 # create the postgres container with the configs like username and password
 postgres:
@@ -40,6 +42,13 @@ migrateup1:
 migratedown1:
 	migrate -path db/migrations -database $(postgres_url) -verbose down 1
 
+# a simple trick to have the name as arg without passing name=$
+name := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+migrate_create:
+	migrate create -ext sql -dir db/migrations -seq $(name);
+%::
+	@true
+
 # generate sqlc queries
 sqlc:
 	sqlc generate
@@ -53,4 +62,4 @@ server:
 mock:
 	mockgen --destination db/mock/transaction_store.go --package storedb github.com/AYehia0/go-bk-mst/db/sqlc Store
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock migrateup1 migratedown1 run
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock migrateup1 migratedown1 run migrate_create
