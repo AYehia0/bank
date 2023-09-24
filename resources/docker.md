@@ -30,3 +30,15 @@ In our case, `docker exec -it postgres12 psql -U root`
 - Run the image : `docker run --name bk --network bk-network -p 8080:8080 -e GIN_MODE=release -e DB_SOURCE="postgresql://root:secret@postgres12:5432/simple_bank?sslmode=disable" bk:latest`
 
 Notes : Since we're using viper, it supports overwritting config vars through export or passing it to docker : `-e`.
+## AWS
+To pull the aws image to test using the aws-cli tool: 
+
+To use with the Docker CLI, pipe the output of the get-login-password command to the docker login command. When retrieving the password, ensure that you specify the same Region that your Amazon ECR registry exists in.
+
+```
+aws ecr get-login-password \
+    --region <region> \
+| docker login \
+    --username AWS \
+    --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
+```
