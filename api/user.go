@@ -141,7 +141,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		RefreshToken: refreshToken,
 		IsBlocked:    false,
 		IpAddr:       ctx.ClientIP(),
-		UserAgent:    ctx.ContentType(),
+		UserAgent:    ctx.Request.UserAgent(),
 		ExpiredAt:    payloadRefresh.ExpiredAt,
 	})
 
