@@ -16,17 +16,18 @@ func TestValidateJWTToken(t *testing.T) {
 	require.NoError(t, err)
 
 	username := utils.GetRandomOwnerName()
-	token, err := creator.Create(
+	token, payload, err := creator.Create(
 		username,
 		time.Minute,
 	)
+	require.NotEmpty(t, payload)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
 	createdAt := time.Now()
 	expiredAt := createdAt.Add(time.Minute)
 
-	payload, err := creator.Verify(token)
+	payload, err = creator.Verify(token)
 	require.NotEmpty(t, payload)
 
 	require.Equal(t, payload.Username, username)
@@ -45,7 +46,7 @@ func TestInvalidJWTToken(t *testing.T) {
 		require.NoError(t, err)
 
 		username := utils.GetRandomOwnerName()
-		token, err := creator.Create(
+		token, _, err := creator.Create(
 			username,
 			-time.Minute,
 		)
