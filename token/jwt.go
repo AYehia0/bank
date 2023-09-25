@@ -26,15 +26,16 @@ func NewJWTCreator(secret string) (TokenCreator, error) {
 }
 
 // create the token for the user with a specific time
-func (c *JWTCreator) Create(username string, duration time.Duration) (string, error) {
+func (c *JWTCreator) Create(username string, duration time.Duration) (string, *Payload, error) {
 	payload, err := NewPayload(username, duration)
 	if err != nil {
-		return "", err
+		return "", payload, err
 	}
 	// make the jwt token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
 
-	return token.SignedString([]byte(c.secretkey))
+	tokenEnc, err := token.SignedString([]byte(c.secretkey))
+	return tokenEnc, payload, err
 }
 
 func (c *JWTCreator) Verify(token string) (*Payload, error) {
