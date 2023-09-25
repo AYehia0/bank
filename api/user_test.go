@@ -14,8 +14,8 @@ import (
 	db "github.com/AYehia0/go-bk-mst/db/sqlc"
 	"github.com/AYehia0/go-bk-mst/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/mock/gomock"
 )
 
 // creating a custom matcher
