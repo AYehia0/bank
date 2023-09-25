@@ -82,6 +82,7 @@ type userLoginReq struct {
 }
 type loginResponse struct {
 	AccessToken          string    `json:"access_token"`
+	RefreshToken         string    `json:"refresh_token"`
 	User                 userResp  `json:"user"`
 	AccessTokenExpireAt  time.Time `json:"access_token_expire_at"`
 	RefreshTokenExpireAt time.Time `json:"refresh_token_expire_at"`
@@ -152,6 +153,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	resp := loginResponse{
 		AccessToken:          token,
 		AccessTokenExpireAt:  payloadAccess.ExpiredAt,
+		RefreshToken:         refreshToken,
 		RefreshTokenExpireAt: payloadRefresh.ExpiredAt,
 		SessionId:            session.ID,
 		User:                 newUserResp(user),
