@@ -58,6 +58,7 @@ func (server *Server) setupServer() {
 	// requires no login
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
+	router.POST("/token/renew_token", server.requestNewAccessToken)
 
 	// create a group for them
 	authRequired := router.Group("/").Use(authMiddleware(server.tokenCreator))

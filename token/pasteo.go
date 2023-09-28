@@ -32,12 +32,13 @@ func NewPasteoToken(secretKey string) (TokenCreator, error) {
 	return creator, nil
 }
 
-func (p *PasteoCreator) Create(username string, duration time.Duration) (string, error) {
+func (p *PasteoCreator) Create(username string, duration time.Duration) (string, *Payload, error) {
 	payload, err := NewPayload(username, duration)
 	if err != nil {
-		return "", err
+		return "", payload, err
 	}
-	return p.versionImp.Encrypt(p.secretKey, payload, nil)
+	token, err := p.versionImp.Encrypt(p.secretKey, payload, nil)
+	return token, payload, err
 }
 
 func (p *PasteoCreator) Verify(token string) (*Payload, error) {

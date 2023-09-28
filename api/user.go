@@ -3,11 +3,13 @@ package api
 import (
 	"database/sql"
 	"net/http"
+	"time"
 
 	"github.com/AYehia0/go-bk-mst/api/helpers"
 	db "github.com/AYehia0/go-bk-mst/db/sqlc"
 	"github.com/AYehia0/go-bk-mst/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
@@ -79,8 +81,12 @@ type userLoginReq struct {
 	Password string `json:"password" binding:"required,min=8"`
 }
 type loginResponse struct {
-	AccessToken string   `json:"access_token"`
-	User        userResp `json:"user"`
+	AccessToken          string    `json:"access_token"`
+	RefreshToken         string    `json:"refresh_token"`
+	User                 userResp  `json:"user"`
+	AccessTokenExpireAt  time.Time `json:"access_token_expire_at"`
+	RefreshTokenExpireAt time.Time `json:"refresh_token_expire_at"`
+	SessionId            uuid.UUID `json:"session_id"`
 }
 
 func (server *Server) loginUser(ctx *gin.Context) {
@@ -112,15 +118,45 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 
 	// create the token
-	token, err := server.tokenCreator.Create(user.Username, server.config.TokenExpireDuration)
+	token, payloadAccess, err := server.tokenCreator.Create(user.Username, server.config.TokenExpireDuration)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, helpers.ErrorResp(err))
 		return
 	}
+
+	// create the refresh token.
+	// the refresh token should be linked to a user.
+	refreshToken, payloadRefresh, err := server.tokenCreator.Create(req.Username, server.config.TokenRefreshExpireDuration)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, helpers.ErrorResp(err))
+		return
+	}
+
+	// the refresh token's UUID --> ID should be returned from the payload itself but the tokenCreator.Create returns the encrypted payload hence we should also return the payload.
+	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
+		ID:           payloadRefresh.Id,
+		Username:     user.Username,
+		RefreshToken: refreshToken,
+		IsBlocked:    false,
+		IpAddr:       ctx.ClientIP(),
+		UserAgent:    ctx.Request.UserAgent(),
+		ExpiredAt:    payloadRefresh.ExpiredAt,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, helpers.ErrorResp(err))
+		return
+	}
+
 	resp := loginResponse{
-		AccessToken: token,
-		User:        newUserResp(user),
+		AccessToken:          token,
+		AccessTokenExpireAt:  payloadAccess.ExpiredAt,
+		RefreshToken:         refreshToken,
+		RefreshTokenExpireAt: payloadRefresh.ExpiredAt,
+		SessionId:            session.ID,
+		User:                 newUserResp(user),
 	}
 
 	ctx.JSON(http.StatusOK, resp)
