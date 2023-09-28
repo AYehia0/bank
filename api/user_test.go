@@ -143,3 +143,71 @@ func TestCreateUser(t *testing.T) {
 		})
 	}
 }
+
+func TestLoginUser(t *testing.T) {
+	user := getRandomUser()
+	password := utils.GetRandomEmail()
+
+	hashedPassword, err := utils.GenerateHash(password)
+	require.NoError(t, err)
+	user.Password = hashedPassword
+
+	testCases := []struct {
+		testName   string
+		body       gin.H
+		buildStubs func(store *mockdb.MockStore)
+		checkResp  func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			testName: "OK",
+			body: gin.H{
+				"username": user.Username,
+				"password": password,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetUserByUsername(gomock.Any(), gomock.Eq(user.Username)).
+					Times(1).
+					Return(user, nil)
+
+				store.EXPECT().
+					CreateSession(gomock.Any(), gomock.Any()).
+					Times(1)
+			},
+			checkResp: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.testName, func(t *testing.T) {
+			// create a new mock controller to be able to use/build the mock's stubs
+			controller := gomock.NewController(t)
+
+			defer controller.Finish()
+
+			store := mockdb.NewMockStore(controller)
+
+			testCase.buildStubs(store)
+
+			// start a server and handle requests using httpserver
+			server := newTestServer(t, store)
+
+			// creating the json
+			data, err := json.Marshal(testCase.body)
+			require.NoError(t, err)
+
+			// we don't have to start a real server, instead we can use the recorder to catch/send req/res
+			recorder := httptest.NewRecorder()
+
+			// TODO: any change in the paths won't be reflected here
+			urlPath := "/users/login"
+			req := httptest.NewRequest(http.MethodPost, urlPath, bytes.NewReader(data))
+
+			// send the request and capture to the recorder
+			server.router.ServeHTTP(recorder, req)
+			testCase.checkResp(t, recorder)
+		})
+	}
+}
