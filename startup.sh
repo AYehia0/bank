@@ -3,8 +3,9 @@
 set -e
 
 echo "Running migrations"
-ls -la
-source /app/config.env
+#source /app/config.env
+echo $DB_SOURCE
+
 /app/migrate -path /app/migrations -database "$DB_SOURCE" -verbose up
 
 echo "Starting the server"

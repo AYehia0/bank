@@ -5,7 +5,7 @@ services:
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=secret
-      - POSTGRES_DB=bank-system
+      - POSTGRES_DB=simple_bank
   api:
     build:
         context: .
@@ -13,7 +13,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DB_SOURCE=postgresql://root:secret@db:5432/bank-system?sslmode=disable
+      - DB_SOURCE=postgresql://root:secret@db:5432/simple_bank?sslmode=disable
     depends_on:
       - db
     entrypoint: ["/app/wait-for.sh", "db:5432", "--", "/app/startup.sh"]
