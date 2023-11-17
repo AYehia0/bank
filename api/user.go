@@ -21,16 +21,20 @@ type userReq struct {
 }
 
 type userResp struct {
-	Username string `json:"username" binding:"required,alphanum"`
-	Email    string `json:"email" binding:"required,email"`
-	FullName string `json:"full_name" binding:"required"`
+	Username          string    `json:"username" binding:"required,alphanum"`
+	Email             string    `json:"email" binding:"required,email"`
+	FullName          string    `json:"full_name" binding:"required"`
+	CreatedAt         time.Time `json:"created_at"`
+	PasswordCreatedAt time.Time `json:"password_created_at"`
 }
 
 func newUserResp(user db.User) userResp {
 	return userResp{
-		FullName: user.FullName,
-		Email:    user.Email,
-		Username: user.Username,
+		FullName:          user.FullName,
+		Email:             user.Email,
+		Username:          user.Username,
+		CreatedAt:         user.CreatedAt,
+		PasswordCreatedAt: user.PasswordChangedAt,
 	}
 }
 
