@@ -1,0 +1,39 @@
+syntax = "proto3"; // use the latest syntax
+
+package pb; // just to group things
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/AYehia0/go-bk-mst/pb";
+
+// the main user
+message User {
+    // <data_type> <name> = <id>
+    string username = 1;
+    string email = 2;
+    string full_name = 3;
+    google.protobuf.Timestamp password_changed_at = 4;
+    google.protobuf.Timestamp created_at = 5;
+}
+
+// create user
+message CreateUserRequest {
+    string username = 1;
+    string email = 2;
+    string full_name = 3;
+    string password = 4;
+}
+
+// login user
+message LoginUserResponse {
+    User user = 1;
+    string access_token = 2;
+    string refresh_token = 3;
+    string session_id = 4;
+    google.protobuf.Timestamp access_token_expires_at = 5;
+    google.protobuf.Timestamp refresh_token_expires_at = 6;
+}
+message LoginUserRequest {
+    string username = 1;
+    string password = 2;
+}

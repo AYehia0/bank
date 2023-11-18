@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+import "user.proto";
+
+package pb;
+
+option go_package = "github.com/AYehia0/go-bk-mst/pb";
+
+service SimpleBank {
+    rpc CreateUser (CreateUserRequest) returns (User) {}
+    rpc LoginUser (LoginUserRequest) returns (LoginUserResponse) {}
+}
